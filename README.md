@@ -1,54 +1,105 @@
-# JourneyBook v2
+# ✈️ JourneyBook
 
-JourneyBook is a full-stack travel booking platform with:
-- React + Vite frontend
-- Node.js + Express + TypeScript backend
-- MongoDB persistence
-- Duffel live flight search fallback to local flight inventory
-- Stripe payment intent flow
-- AI trip planner fallback mode
+> A full-stack travel booking platform with live flight search, Stripe payments, and an AI-powered trip planner.
 
-## Production-ready improvements included
-- environment-based backend config
-- graceful shutdown and health endpoint
-- stricter CORS and security headers
-- SPA-safe frontend Nginx config
-- Dockerfiles for frontend and backend
-- production docker-compose file
-- PM2 ecosystem file for backend
-- frontend auth bootstrap using stored token
-- cleaned booking reference generation and duplicate index removal
+---
 
-## Folder structure
-- `frontend/` – React client
-- `backend/` – Express API
-- `docker-compose.production.yml` – production container stack
+## Overview
 
-## Quick start
+JourneyBook is a MERN stack travel booking platform built with TypeScript. Users can search for live flights via the Duffel API, book and manage trips, process payments through Stripe, and generate personalised multi-day travel itineraries powered by Claude AI. The platform falls back gracefully to a database and demo mode when external APIs are unavailable — keeping it always demonstrable.
 
-### Backend
-1. Copy `backend/.env.example` to `backend/.env`
-2. Fill in MongoDB, JWT, Duffel, Stripe, and Anthropic values
-3. Run:
-   - `npm install`
-   - `npm run build`
-   - `npm start`
+---
+
+## Features
+
+- ✈️ **Live flight search** — Duffel API integration for real-time flight offers by route, date & cabin class
+- 💾 **Smart fallback** — Automatically falls back to seeded MongoDB data when Duffel is unavailable
+- 💳 **Stripe payments** — Secure booking and payment processing
+- 🤖 **AI trip planner** — Claude (claude-opus-4-6) generates detailed multi-day itineraries with day-by-day activities, accommodation, costs & travel tips
+- 🗺️ **City name search** — Search flights by city name with IATA airport code resolution
+- 📋 **Booking dashboard** — Authenticated users can view and manage all their bookings
+- 🔒 **JWT authentication** — Secure login, registration and protected routes
+- 🛡️ **Production hardened** — Helmet, CORS, rate limiting, input validation via express-validator
+- 🐳 **Docker support** — Dockerfile and docker-compose for containerised deployment
+- ⚙️ **PM2 ready** — ecosystem.config.js included for process management
+
+---
+
+## Tech Stack
 
 ### Frontend
-1. Copy `frontend/.env.production.example` to `frontend/.env.production`
-2. Set `VITE_API_URL`
-3. Run:
-   - `npm install`
-   - `npm run build`
-   - `npm run preview`
 
-## Docker production run
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.production.example frontend/.env.production
 
-docker compose -f docker-compose.production.yml up --build -d
-```
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 
-## Important note
-This environment does not have package registry access, so I could not complete a real `npm install` and run a final verified build inside the container. The source has been upgraded and packaged for deployment, but you still need to run the install/build steps on a machine or VPS with internet access.
+
+
+
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+
+
+
+
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+
+
+
+
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+
+
+
+### Backend
+
+
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+
+
+
+
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+
+
+
+
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+
+
+
+
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+
+
+
+### Integrations
+
+
+![Duffel](https://img.shields.io/badge/Duffel_API-000000?style=for-the-badge)
+
+
+
+
+![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=for-the-badge&logo=stripe&logoColor=white)
+
+
+
+
+![Claude](https://img.shields.io/badge/Claude_AI-CC785C?style=for-the-badge)
+
+
+
+### Deployment
+
+
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+
+
+
+
+![Netlify](https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)
+
+
+
+---
+
+© 2026 JourneyBook • All Rights Reserved • Built by Jall Technologies
