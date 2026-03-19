@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { PlaneTakeoff, PlaneLanding, CalendarDays, ArrowRight, ChevronRight, Users, Briefcase } from 'lucide-react';
+import { PlaneTakeoff, PlaneLanding, CalendarDays, Users, Clock, ChevronRight, ArrowRight, Wifi, Briefcase } from 'lucide-react';
 import { flightService, bookingService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import CitySearch from '../components/CitySearch';
-import PassengerSelector, { type PassengerCounts } from '../components/PassengerSelector';
 import toast from 'react-hot-toast';
 
 type SearchParams = {
@@ -14,7 +13,7 @@ type SearchParams = {
   destinationDisplay: string;
   departureDate: string;
   cabinClass: string;
-  passengers: PassengerCounts;
+  passengers: number;
 };
 
 const CLASS_LABELS: Record<string, string> = {
@@ -29,8 +28,6 @@ const CLASS_BADGE: Record<string, string> = {
   first: 'badge-first',
 };
 
-const DEFAULT_PASSENGERS: PassengerCounts = { adults: 1, children: 0, infants: 0 };
-
 export default function FlightSearch() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,23 +39,21 @@ export default function FlightSearch() {
     originDisplay: query.get('origin') || '',
     destination: query.get('destination') || '',
     destinationDisplay: query.get('destination') || '',
-    departureDate: query.get('date') || '',
-    cabinClass: query.get('cabinClass') || 'economy',
-    passengers: {
-      adults: parseInt(query.get('adults') || '1'),
-      children: parseInt(query.get('children') || '0'),
-      infants: parseInt(query.get('infants') || '0'),
-    },
+    departureDate: '',
+    cabinClass: 'economy',
+    passengers: 1,
   });
 
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [searched, setSearched] = useState(false);
+  const [bookingId, setBookingId] = useState<string | null>(null);
   const [bookingFlight, setBookingFlight] = useState<any | null>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingForm, setBookingForm] = useState({ email: '', phone: '' });
+  const [searched, setSearched] = useState(false);
 
+  // Sync URL params on navigation
   useEffect(() => {
     const o = query.get('origin') || '';
     const d = query.get('destination') || '';
@@ -73,12 +68,12 @@ export default function FlightSearch() {
     }
   }, [location.key]);
 
+  // Today's min date for date input
   const today = new Date().toISOString().split('T')[0];
-  const totalPassengers = params.passengers.adults + params.passengers.children + params.passengers.infants;
 
   const onSearch = async () => {
     if (!params.origin || !params.destination || !params.departureDate) {
-      toast.error('Please fill in origin, destination and date');
+      toast.error('Please fill in origin, destination, and date');
       return;
     }
     try {
@@ -90,14 +85,15 @@ export default function FlightSearch() {
         destination: params.destination,
         date: params.departureDate,
         cabinClass: params.cabinClass,
-        passengers: totalPassengers,
       });
       const normalized =
         Array.isArray(data) ? data :
         Array.isArray(data?.flights) ? data.flights :
         Array.isArray(data?.data) ? data.data : [];
       setResults(normalized);
-      if (normalized.length === 0) toast('No flights found for this route and date', { icon: '🔍' });
+      if (normalized.length === 0) {
+        toast('No flights found for this route and date', { icon: '🔍' });
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message || 'Failed to search flights';
       setError(msg);
@@ -109,30 +105,30 @@ export default function FlightSearch() {
   };
 
   const handleBook = (flight: any) => {
-    if (!isAuthenticated) { toast.error('Please log in to book'); navigate('/login'); return; }
+    if (!isAuthenticated) {
+      toast.error('Please log in to book a flight');
+      navigate('/login');
+      return;
+    }
     setBookingFlight(flight);
-  };
-
-  const totalPrice = (basePrice: number) => {
-    // Children pay full fare, infants are free (lap)
-    const paying = params.passengers.adults + params.passengers.children;
-    return basePrice * paying;
+    setBookingId(flight._id || flight.id);
   };
 
   const confirmBooking = async () => {
-    if (!bookingFlight) return;
+    if (!bookingId || !bookingFlight) return;
     if (!bookingForm.email) { toast.error('Please enter your contact email'); return; }
     setBookingLoading(true);
     try {
       const res = await bookingService.create({
-        flightId: bookingFlight._id || bookingFlight.id,
-        passengers: totalPassengers,
+        flightId: bookingId,
+        passengers: params.passengers,
         class: params.cabinClass,
         contactEmail: bookingForm.email,
         contactPhone: bookingForm.phone,
       });
       toast.success(`Booking confirmed! Ref: ${res.booking?.bookingReference}`);
       setBookingFlight(null);
+      setBookingId(null);
       navigate('/dashboard');
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Booking failed');
@@ -143,7 +139,6 @@ export default function FlightSearch() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-
       {/* Search panel */}
       <div className="hero-bg py-8 px-4">
         <div className="max-w-5xl mx-auto">
@@ -151,32 +146,32 @@ export default function FlightSearch() {
             Search Flights
           </h1>
 
-          <div className="rounded-2xl p-5 sm:p-6" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+          <div className="card p-5 sm:p-6 bg-white/[0.03] border-white/10 backdrop-blur-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               {/* Origin */}
-              <div className="lg:col-span-1">
+              <div>
                 <label className="label-dark">From</label>
                 <CitySearch
                   value={params.originDisplay}
                   onChange={(display, code) => setParams(p => ({ ...p, origin: code, originDisplay: display }))}
-                  placeholder="Cape Town..."
+                  placeholder="Cape Town, Dubai..."
                   dark
                 />
               </div>
 
               {/* Destination */}
-              <div className="lg:col-span-1">
+              <div>
                 <label className="label-dark">To</label>
                 <CitySearch
                   value={params.destinationDisplay}
                   onChange={(display, code) => setParams(p => ({ ...p, destination: code, destinationDisplay: display }))}
-                  placeholder="Dubai, London..."
+                  placeholder="London, Nairobi..."
                   dark
                 />
               </div>
 
               {/* Date */}
-              <div className="lg:col-span-1">
+              <div>
                 <label className="label-dark">Departure</label>
                 <input
                   type="date"
@@ -188,41 +183,47 @@ export default function FlightSearch() {
                 />
               </div>
 
-              {/* Passengers */}
-              <div className="lg:col-span-1">
-                <label className="label-dark">Passengers</label>
-                <PassengerSelector
-                  value={params.passengers}
-                  onChange={passengers => setParams(p => ({ ...p, passengers }))}
-                  dark
-                />
-              </div>
-
-              {/* Class */}
-              <div className="lg:col-span-1">
-                <label className="label-dark">Cabin Class</label>
-                <select
-                  value={params.cabinClass}
-                  onChange={e => setParams(p => ({ ...p, cabinClass: e.target.value }))}
-                  className="input-dark w-full"
-                >
-                  <option value="economy">Economy</option>
-                  <option value="business">Business</option>
-                  <option value="first">First Class</option>
-                </select>
+              {/* Class + Passengers */}
+              <div>
+                <label className="label-dark">Class · Passengers</label>
+                <div className="flex gap-2">
+                  <select
+                    value={params.cabinClass}
+                    onChange={e => setParams(p => ({ ...p, cabinClass: e.target.value }))}
+                    className="input-dark flex-1"
+                  >
+                    <option value="economy">Economy</option>
+                    <option value="business">Business</option>
+                    <option value="first">First</option>
+                  </select>
+                  <input
+                    type="number"
+                    min={1}
+                    max={9}
+                    value={params.passengers}
+                    onChange={e => setParams(p => ({ ...p, passengers: parseInt(e.target.value) || 1 }))}
+                    className="input-dark w-16 text-center"
+                  />
+                </div>
               </div>
             </div>
 
             <button
               onClick={onSearch}
               disabled={loading}
-              className="w-full sm:w-auto px-8 py-3.5 font-bold rounded-xl transition-all duration-150 shadow-lg flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: 'white', fontFamily: 'Syne, sans-serif' }}
+              className="w-full sm:w-auto px-8 py-3.5 bg-sky-500 hover:bg-sky-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all duration-150 shadow-lg hover:shadow-sky-500/30 flex items-center justify-center gap-2 text-sm"
+              style={{ fontFamily: 'Syne, sans-serif' }}
             >
               {loading ? (
-                <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Searching...</>
+                <>
+                  <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Searching...
+                </>
               ) : (
-                <><PlaneTakeoff className="w-4 h-4" /> Search {totalPassengers} Passenger{totalPassengers !== 1 ? 's' : ''}</>
+                <>
+                  <PlaneTakeoff className="w-4 h-4" />
+                  Search Flights
+                </>
               )}
             </button>
           </div>
@@ -231,27 +232,23 @@ export default function FlightSearch() {
 
       {/* Results */}
       <div className="max-w-5xl mx-auto px-4 py-8">
-
+        {/* Result count */}
         {searched && !loading && (
-          <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+          <div className="flex items-center justify-between mb-5">
             <p className="text-slate-600 font-semibold">
               {results.length > 0
                 ? <><span className="text-slate-900 font-extrabold">{results.length}</span> flight{results.length !== 1 ? 's' : ''} found</>
                 : 'No flights found'}
             </p>
             {results.length > 0 && (
-              <div className="flex items-center gap-3 text-xs text-slate-400">
-                <span>{params.origin} → {params.destination}</span>
-                <span>·</span>
-                <span>{params.departureDate}</span>
-                <span>·</span>
-                <span>{totalPassengers} pax · {CLASS_LABELS[params.cabinClass]}</span>
-              </div>
+              <p className="text-xs text-slate-400">
+                {params.origin} → {params.destination} · {params.departureDate}
+              </p>
             )}
           </div>
         )}
 
-        {/* Skeleton */}
+        {/* Skeleton loader */}
         {loading && (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
@@ -268,7 +265,7 @@ export default function FlightSearch() {
           </div>
         )}
 
-        {/* Error */}
+        {/* Error state */}
         {error && !loading && (
           <div className="card p-6 border-red-100 bg-red-50">
             <p className="text-red-600 font-semibold">{error}</p>
@@ -276,12 +273,16 @@ export default function FlightSearch() {
           </div>
         )}
 
-        {/* Empty */}
+        {/* Empty state */}
         {searched && !loading && !error && results.length === 0 && (
           <div className="card p-12 text-center">
             <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold text-slate-700 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>No flights found</h3>
-            <p className="text-slate-400 text-sm max-w-sm mx-auto">Try different dates or check your airport codes (e.g. CPT, JNB, DXB).</p>
+            <h3 className="text-xl font-bold text-slate-700 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+              No flights found
+            </h3>
+            <p className="text-slate-400 text-sm max-w-sm mx-auto">
+              Try different dates or check that your airport codes are correct (e.g. CPT, JNB, DXB).
+            </p>
           </div>
         )}
 
@@ -289,14 +290,21 @@ export default function FlightSearch() {
         {!loading && results.length > 0 && (
           <div className="space-y-4 fade-in">
             {results.map((flight: any, index: number) => (
-              <div key={flight._id || flight.id || index} className="card hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              <div
+                key={flight._id || flight.id || flight.flightNumber || index}
+                className="card hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              >
+                {/* Top bar — colored by class */}
                 <div className={`h-1 ${flight.class === 'first' ? 'bg-gradient-to-r from-violet-500 to-purple-600' : flight.class === 'business' ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-gradient-to-r from-sky-500 to-blue-600'}`} />
 
                 <div className="p-5">
-                  {/* Header */}
+                  {/* Header row */}
                   <div className="flex items-start justify-between gap-4 mb-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-lg flex-shrink-0">✈</div>
+                    <div className="flex items-center gap-4">
+                      {/* Airline logo placeholder */}
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-lg flex-shrink-0">
+                        ✈
+                      </div>
                       <div>
                         <p className="font-bold text-slate-800">{flight.airline}</p>
                         <p className="text-xs text-slate-400">{flight.flightNumber}</p>
@@ -304,12 +312,9 @@ export default function FlightSearch() {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-2xl font-extrabold text-slate-900" style={{ fontFamily: 'Syne, sans-serif' }}>
-                        R{totalPrice(Number(flight.price || 0)).toLocaleString()}
+                        R{Number(flight.price || 0).toLocaleString()}
                       </p>
-                      <p className="text-xs text-slate-400">
-                        {totalPassengers > 1 ? `R${Number(flight.price || 0).toLocaleString()} × ${params.passengers.adults + params.passengers.children} pax` : 'per person'}
-                      </p>
-                      <span className={`${CLASS_BADGE[flight.class] || 'badge-economy'} mt-1`}>
+                      <span className={CLASS_BADGE[flight.class] || 'badge-economy'}>
                         {CLASS_LABELS[flight.class] || flight.class}
                       </span>
                     </div>
@@ -318,10 +323,13 @@ export default function FlightSearch() {
                   {/* Route */}
                   <div className="flex items-center gap-4 mb-5">
                     <div>
-                      <p className="text-2xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif' }}>{flight.origin?.code || params.origin}</p>
+                      <p className="text-2xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif' }}>
+                        {flight.origin?.code || params.origin}
+                      </p>
                       <p className="text-xs text-slate-500">{flight.origin?.city || ''}</p>
                       <p className="text-lg font-bold text-slate-700 mt-0.5">{flight.departure?.time || '—'}</p>
                     </div>
+
                     <div className="flex-1 flex flex-col items-center gap-1">
                       <p className="text-xs text-slate-400">{flight.duration || '—'}</p>
                       <div className="flex w-full items-center gap-1">
@@ -329,38 +337,41 @@ export default function FlightSearch() {
                         <ArrowRight className="w-4 h-4 text-sky-500" />
                         <div className="flex-1 h-px bg-slate-200" />
                       </div>
-                      <p className="text-xs text-slate-400">{flight.stops === 0 ? 'Nonstop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}</p>
+                      <p className="text-xs text-slate-400">
+                        {flight.stops === 0 ? 'Nonstop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
+                      </p>
                     </div>
+
                     <div className="text-right">
-                      <p className="text-2xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif' }}>{flight.destination?.code || params.destination}</p>
+                      <p className="text-2xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif' }}>
+                        {flight.destination?.code || params.destination}
+                      </p>
                       <p className="text-xs text-slate-500">{flight.destination?.city || ''}</p>
                       <p className="text-lg font-bold text-slate-700 mt-0.5">{flight.arrival?.time || '—'}</p>
                     </div>
                   </div>
 
                   {/* Footer */}
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 flex-wrap gap-3">
-                    <div className="flex items-center gap-4 flex-wrap">
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <span className="flex items-center gap-1 text-xs text-slate-400">
-                        <Users className="w-3.5 h-3.5" /> {flight.availableSeats} seats left
+                        <Users className="w-3.5 h-3.5" />
+                        {flight.availableSeats} seats left
                       </span>
-                      {params.passengers.infants > 0 && (
-                        <span className="text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full">
-                          {params.passengers.infants} infant{params.passengers.infants > 1 ? 's' : ''} on lap — free
-                        </span>
-                      )}
                       {(flight.amenities || []).slice(0, 2).map((a: string) => (
                         <span key={a} className="flex items-center gap-1 text-xs text-slate-400">
-                          <Briefcase className="w-3.5 h-3.5" /> {a}
+                          <Briefcase className="w-3.5 h-3.5" />
+                          {a}
                         </span>
                       ))}
                     </div>
                     <button
                       onClick={() => handleBook(flight)}
-                      className="flex items-center gap-1.5 px-5 py-2.5 text-white font-bold rounded-xl text-sm transition-all shadow-md"
-                      style={{ background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', fontFamily: 'Syne, sans-serif' }}
+                      className="flex items-center gap-1.5 px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl text-sm transition-all shadow-md hover:shadow-sky-500/25"
+                      style={{ fontFamily: 'Syne, sans-serif' }}
                     >
-                      Book <ChevronRight className="w-4 h-4" />
+                      Book
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -375,59 +386,61 @@ export default function FlightSearch() {
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
           style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-          onClick={e => { if (e.target === e.currentTarget) setBookingFlight(null); }}
+          onClick={e => { if (e.target === e.currentTarget) { setBookingFlight(null); setBookingId(null); } }}
         >
           <div className="card w-full max-w-md p-6 slide-down">
             <div className="flex items-start justify-between mb-5">
               <div>
-                <h3 className="text-xl font-extrabold text-slate-800" style={{ fontFamily: 'Syne, sans-serif' }}>Confirm Booking</h3>
+                <h3 className="text-xl font-extrabold text-slate-800" style={{ fontFamily: 'Syne, sans-serif' }}>
+                  Confirm Booking
+                </h3>
                 <p className="text-sm text-slate-500 mt-0.5">
-                  {bookingFlight.origin?.code} → {bookingFlight.destination?.code}
+                  {bookingFlight.origin?.code} → {bookingFlight.destination?.code} · R{Number(bookingFlight.price).toLocaleString()}
                 </p>
               </div>
-              <button onClick={() => setBookingFlight(null)} className="text-slate-400 hover:text-slate-600 p-1">✕</button>
+              <button
+                onClick={() => { setBookingFlight(null); setBookingId(null); }}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+              >✕</button>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="label">Contact Email *</label>
-                <input type="email" className="input-field" placeholder="you@email.com"
-                  value={bookingForm.email} onChange={e => setBookingForm(f => ({ ...f, email: e.target.value }))} />
+                <input
+                  type="email"
+                  className="input-field"
+                  placeholder="you@email.com"
+                  value={bookingForm.email}
+                  onChange={e => setBookingForm(f => ({ ...f, email: e.target.value }))}
+                />
               </div>
               <div>
                 <label className="label">Phone (optional)</label>
-                <input type="tel" className="input-field" placeholder="+27 ..."
-                  value={bookingForm.phone} onChange={e => setBookingForm(f => ({ ...f, phone: e.target.value }))} />
+                <input
+                  type="tel"
+                  className="input-field"
+                  placeholder="+27 ..."
+                  value={bookingForm.phone}
+                  onChange={e => setBookingForm(f => ({ ...f, phone: e.target.value }))}
+                />
               </div>
 
-              {/* Passenger breakdown */}
-              <div className="bg-slate-50 rounded-2xl p-4 text-sm space-y-2">
-                <p className="font-bold text-slate-700 mb-3" style={{ fontFamily: 'Syne, sans-serif' }}>Passenger Breakdown</p>
+              <div className="bg-slate-50 rounded-xl p-4 text-sm space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Adults (12+) × {params.passengers.adults}</span>
-                  <span className="font-semibold">R{(Number(bookingFlight.price) * params.passengers.adults).toLocaleString()}</span>
+                  <span className="text-slate-500">Passengers</span>
+                  <span className="font-semibold">{params.passengers}</span>
                 </div>
-                {params.passengers.children > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Children (2–11) × {params.passengers.children}</span>
-                    <span className="font-semibold">R{(Number(bookingFlight.price) * params.passengers.children).toLocaleString()}</span>
-                  </div>
-                )}
-                {params.passengers.infants > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Infants (under 2) × {params.passengers.infants}</span>
-                    <span className="font-semibold text-emerald-600">Free</span>
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Class</span>
+                  <span className="font-semibold capitalize">{params.cabinClass}</span>
+                </div>
                 <div className="flex justify-between pt-2 border-t border-slate-200">
                   <span className="font-bold text-slate-800">Total</span>
-                  <span className="font-extrabold text-sky-600 text-lg" style={{ fontFamily: 'Syne, sans-serif' }}>
-                    R{totalPrice(Number(bookingFlight.price)).toLocaleString()}
+                  <span className="font-extrabold text-sky-600" style={{ fontFamily: 'Syne, sans-serif' }}>
+                    R{(Number(bookingFlight.price) * params.passengers).toLocaleString()}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 pt-1">
-                  {params.cabinClass.charAt(0).toUpperCase() + params.cabinClass.slice(1)} class · {totalPassengers} passenger{totalPassengers !== 1 ? 's' : ''}
-                </p>
               </div>
 
               <button
@@ -435,9 +448,9 @@ export default function FlightSearch() {
                 disabled={bookingLoading}
                 className="btn-primary w-full justify-center py-3.5"
               >
-                {bookingLoading
-                  ? <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Processing...</>
-                  : `Confirm · R${totalPrice(Number(bookingFlight.price)).toLocaleString()} →`}
+                {bookingLoading ? (
+                  <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Processing...</>
+                ) : 'Confirm Booking →'}
               </button>
             </div>
           </div>
