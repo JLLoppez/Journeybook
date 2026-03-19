@@ -5,22 +5,23 @@
 @layer base {
   :root {
     --sky: #0ea5e9;
+    --sky-mid: #0284c7;
     --sky-dark: #0369a1;
-    --night: #0a0f1e;
-    --night-mid: #111827;
+    --night: #080d1a;
+    --night-mid: #0f172a;
+    --night-card: #131c2e;
     --gold: #f59e0b;
     --cloud: #f8fafc;
     --ink: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
   }
 
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html {
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -29,30 +30,69 @@
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5 {
     font-family: 'Syne', system-ui, sans-serif;
+    line-height: 1.2;
   }
+
+  ::selection { background: #bae6fd; color: #0c4a6e; }
+  input, select, textarea, button { font-family: inherit; }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-sky-600 text-white font-semibold rounded-xl hover:bg-sky-700 transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-sky-600 text-white font-semibold rounded-xl
+           hover:bg-sky-500 active:scale-[0.98] transition-all duration-150
+           shadow-md hover:shadow-sky-500/25 hover:shadow-lg;
     font-family: 'Syne', sans-serif;
+    letter-spacing: 0.01em;
   }
 
   .btn-outline {
-    @apply inline-flex items-center gap-2 px-6 py-3 border-2 border-sky-600 text-sky-700 font-semibold rounded-xl hover:bg-sky-50 transition-all duration-200;
+    @apply inline-flex items-center gap-2 px-6 py-3 border border-slate-200 text-slate-700
+           font-semibold rounded-xl hover:border-sky-300 hover:text-sky-700 hover:bg-sky-50
+           active:scale-[0.98] transition-all duration-150;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-6 py-3 border border-red-200 text-red-500
+           font-semibold rounded-xl hover:bg-red-50 hover:border-red-300
+           active:scale-[0.98] transition-all duration-150;
     font-family: 'Syne', sans-serif;
   }
 
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden;
+    @apply bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-150 bg-white;
+    @apply w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800
+           placeholder-slate-400 bg-white
+           focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400
+           transition-all duration-150;
+    font-size: 0.9375rem;
+  }
+
+  .input-dark {
+    @apply w-full px-4 py-3 rounded-xl text-white placeholder-white/40
+           focus:outline-none focus:ring-2 focus:ring-sky-400/40
+           transition-all duration-150;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.9375rem;
+  }
+
+  .input-dark:focus {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(56,189,248,0.5);
   }
 
   .label {
@@ -61,65 +101,421 @@
   }
 
   .badge {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide;
   }
 
-  .badge-economy {
-    @apply badge bg-slate-100 text-slate-600;
-  }
-  .badge-business {
-    @apply badge bg-amber-100 text-amber-700;
-  }
-  .badge-first {
-    @apply badge bg-purple-100 text-purple-700;
-  }
+  .badge-economy { @apply badge bg-slate-100 text-slate-600; }
+  .badge-business { @apply badge bg-amber-100 text-amber-700; }
+  .badge-first { @apply badge bg-violet-100 text-violet-700; }
 
-  .status-confirmed {
-    @apply badge bg-green-100 text-green-700;
-  }
-  .status-pending {
-    @apply badge bg-yellow-100 text-yellow-700;
-  }
-  .status-cancelled {
-    @apply badge bg-red-100 text-red-700;
+  .status-confirmed { @apply badge bg-emerald-50 text-emerald-700 border border-emerald-200; }
+  .status-pending { @apply badge bg-amber-50 text-amber-700 border border-amber-200; }
+  .status-cancelled { @apply badge bg-red-50 text-red-600 border border-red-200; }
+
+  .skeleton { @apply rounded-xl bg-slate-100 animate-pulse; }
+
+  .section-label {
+    @apply text-xs font-bold tracking-widest text-sky-600 uppercase;
+    font-family: 'Syne', sans-serif;
   }
 }
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-700;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #818cf8 100%);
   }
 
   .hero-bg {
-    background: linear-gradient(135deg, #0f172a 0%, #0c4a6e 60%, #0369a1 100%);
+    background: linear-gradient(145deg, #080d1a 0%, #0c1a35 50%, #0c3a5c 100%);
+  }
+
+  .hero-mesh {
+    background:
+      radial-gradient(ellipse 80% 60% at 60% -10%, rgba(14,165,233,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 10% 80%, rgba(99,102,241,0.12) 0%, transparent 55%),
+      linear-gradient(145deg, #080d1a 0%, #0c1a35 50%, #0c2d4a 100%);
   }
 
   .glass {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.1);
   }
 
   .animate-float {
-    animation: float 6s ease-in-out infinite;
+    animation: float 5s ease-in-out infinite;
   }
 
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
+    50% { transform: translateY(-10px); }
   }
 
   .fade-up {
-    animation: fadeUp 0.6s ease-out forwards;
+    animation: fadeUp 0.5s ease-out both;
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .stagger-1 { animation-delay: 0.1s; }
-  .stagger-2 { animation-delay: 0.2s; }
-  .stagger-3 { animation-delay: 0.3s; }
-  .stagger-4 { animation-delay: 0.4s; }
+  .fade-in {
+    animation: fadeIn 0.35s ease-out both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .slide-down {
+    animation: slideDown 0.2s ease-out both;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stagger-1 { animation-delay: 0.08s; opacity: 0; }
+  .stagger-2 { animation-delay: 0.16s; opacity: 0; }
+  .stagger-3 { animation-delay: 0.24s; opacity: 0; }
+  .stagger-4 { animation-delay: 0.32s; opacity: 0; }
+  .stagger-5 { animation-delay: 0.40s; opacity: 0; }
+
+  .scroll-hide::-webkit-scrollbar { display: none; }
+  .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .grid-texture {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   2026 ANIMATION SYSTEM — Full Platform
+   ═══════════════════════════════════════════════════════ */
+
+@layer utilities {
+
+  /* ── Page transitions ──────────────────────────────── */
+  .page-enter {
+    animation: pageEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(12px) scale(0.995); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── Slide animations ──────────────────────────────── */
+  .slide-up {
+    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide-left {
+    animation: slideLeft 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes slideLeft {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .slide-right {
+    animation: slideRight 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes slideRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── Scale animations ──────────────────────────────── */
+  .scale-in {
+    animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .scale-in-center {
+    animation: scaleInCenter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes scaleInCenter {
+    from { opacity: 0; transform: scale(0.75); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── Bounce ────────────────────────────────────────── */
+  .bounce-in {
+    animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes bounceIn {
+    0%   { opacity: 0; transform: scale(0.7) translateY(20px); }
+    60%  { opacity: 1; transform: scale(1.05) translateY(-4px); }
+    100% { transform: scale(1) translateY(0); }
+  }
+
+  /* ── Pulse glow ────────────────────────────────────── */
+  .pulse-glow {
+    animation: pulseGlow 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+    50%       { box-shadow: 0 0 20px 4px rgba(14, 165, 233, 0.2); }
+  }
+
+  /* ── Shimmer / loading bar ─────────────────────────── */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.15) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmerMove 1.8s linear infinite;
+  }
+
+  @keyframes shimmerMove {
+    from { background-position: 200% center; }
+    to   { background-position: -200% center; }
+  }
+
+  /* ── Typing dots ───────────────────────────────────── */
+  .dot-pulse span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: dotPulse 1.2s ease-in-out infinite both;
+  }
+
+  .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dotPulse {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40%            { transform: scale(1);   opacity: 1; }
+  }
+
+  /* ── Spin variants ─────────────────────────────────── */
+  .spin-slow {
+    animation: spin 3s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* ── Plane fly-in ──────────────────────────────────── */
+  .plane-fly {
+    animation: planeFly 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes planeFly {
+    from { opacity: 0; transform: translateX(-40px) rotate(-10deg); }
+    to   { opacity: 1; transform: translateX(0) rotate(0deg); }
+  }
+
+  /* ── Number count up feel ──────────────────────────── */
+  .count-up {
+    animation: countUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Card hover lift (CSS only) ────────────────────── */
+  .card-lift {
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.2s ease;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px -8px rgba(0,0,0,0.15);
+  }
+
+  /* ── Button press ──────────────────────────────────── */
+  .btn-press {
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .btn-press:active {
+    transform: scale(0.96) translateY(1px);
+    box-shadow: none;
+  }
+
+  /* ── Underline grow ────────────────────────────────── */
+  .underline-grow {
+    position: relative;
+  }
+
+  .underline-grow::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .underline-grow:hover::after {
+    width: 100%;
+  }
+
+  /* ── Stagger children (for lists) ──────────────────── */
+  .stagger-children > *:nth-child(1)  { animation-delay: 0.05s; }
+  .stagger-children > *:nth-child(2)  { animation-delay: 0.10s; }
+  .stagger-children > *:nth-child(3)  { animation-delay: 0.15s; }
+  .stagger-children > *:nth-child(4)  { animation-delay: 0.20s; }
+  .stagger-children > *:nth-child(5)  { animation-delay: 0.25s; }
+  .stagger-children > *:nth-child(6)  { animation-delay: 0.30s; }
+
+  /* ── Route line animation ──────────────────────────── */
+  .route-line {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: drawLine 1s ease-out 0.3s forwards;
+  }
+
+  @keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ── Modal backdrop ────────────────────────────────── */
+  .backdrop-enter {
+    animation: backdropEnter 0.2s ease both;
+  }
+
+  @keyframes backdropEnter {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to   { opacity: 1; backdrop-filter: blur(4px); }
+  }
+
+  /* ── Toast-like notification ───────────────────────── */
+  .toast-enter {
+    animation: toastEnter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes toastEnter {
+    from { opacity: 0; transform: translateY(-12px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── Gradient shift (hero background) ─────────────── */
+  .gradient-shift {
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* ── Ripple effect ─────────────────────────────────── */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple::before {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: all 0.5s ease;
+  }
+
+  .ripple:active::before {
+    inset: -50%;
+    transform: scale(1);
+    opacity: 0;
+  }
+
+  /* ── Extended stagger delays ───────────────────────── */
+  .stagger-6  { animation-delay: 0.48s; opacity: 0; }
+  .stagger-7  { animation-delay: 0.56s; opacity: 0; }
+  .stagger-8  { animation-delay: 0.64s; opacity: 0; }
+
+  /* ── Wobble (for error states) ─────────────────────── */
+  .wobble {
+    animation: wobble 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  @keyframes wobble {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-6px); }
+    40%       { transform: translateX(6px); }
+    60%       { transform: translateX(-4px); }
+    80%       { transform: translateX(4px); }
+  }
+
+  /* ── Success checkmark ─────────────────────────────── */
+  .check-pop {
+    animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes checkPop {
+    from { opacity: 0; transform: scale(0) rotate(-45deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+}
+
+/* ── Global smooth transitions for interactive elements ── */
+a, button {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Focus ring ────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ── Reduced motion support ────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
