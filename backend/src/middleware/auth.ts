@@ -17,24 +17,19 @@ export const authenticate = async (
 ): Promise<void> => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-
     if (!token) {
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
-
     const decoded = verifyToken(token);
-    
-    // Verify user still exists
     const user = await User.findById(decoded.userId);
     if (!user) {
       res.status(401).json({ error: 'User no longer exists' });
       return;
     }
-
     req.user = decoded;
     next();
-  } catch (error) {
+  } catch {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
@@ -45,12 +40,10 @@ export const authorize = (...roles: string[]) => {
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
-
     if (!roles.includes(req.user.role)) {
       res.status(403).json({ error: 'Insufficient permissions' });
       return;
     }
-
     next();
   };
 };
