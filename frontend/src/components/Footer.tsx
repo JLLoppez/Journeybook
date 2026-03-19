@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="sm:col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center shadow-md">
-                <span className="text-white text-sm">✈</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
               </div>
               <span className="text-white text-lg font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>
                 Journey<span className="text-sky-400">Book</span>

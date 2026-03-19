@@ -38,7 +38,9 @@
     "mongodb": "^7.1.0",
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
-    "stripe": "^14.10.0",
+    "stripe": "^14.10.0"
+  },
+  "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
@@ -48,9 +50,7 @@
     "@types/node": "^20.10.6",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "@typescript-eslint/parser": "^6.16.0"
-  },
-  "devDependencies": {
+    "@typescript-eslint/parser": "^6.16.0",
     "eslint": "^8.56.0",
     "jest": "^29.7.0",
     "prettier": "^3.1.1",
@@ -64,22 +64,12 @@
     "testEnvironment": "node",
     "testPathPatterns": "__tests__",
     "transform": {
-      "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-          "tsconfig": {
-            "module": "CommonJS"
-          }
-        }
-      ]
+      "^.+\\.tsx?$": ["ts-jest", { "tsconfig": { "module": "CommonJS" } }]
     },
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
     "coverageDirectory": "coverage",
-    "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/server.ts"
-    ]
+    "collectCoverageFrom": ["src/**/*.ts", "!src/server.ts"]
   }
 }

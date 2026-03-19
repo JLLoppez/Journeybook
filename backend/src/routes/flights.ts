@@ -1,13 +1,13 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import airports from '../../data/airports.json';
 import airlines from '../../data/airlines.json';
 import { getDistance } from 'geolib';
 
 const router = express.Router();
 
-router.get('/airports', (req: Request, res: Response) => {
+router.get('/airports', (req, res) => {
   const q = (req.query.q as string)?.toLowerCase();
-  if (!q) { res.json([]); return; }
+  if (!q) return res.json([]);
 
   const results = (airports as any[])
     .filter(a =>
@@ -20,13 +20,13 @@ router.get('/airports', (req: Request, res: Response) => {
   res.json(results);
 });
 
-router.get('/search', (req: Request, res: Response) => {
+router.get('/search', (req, res) => {
   const { from, to } = req.query;
 
   const a1 = (airports as any[]).find(a => a.iata === from);
   const a2 = (airports as any[]).find(a => a.iata === to);
 
-  if (!a1 || !a2) { res.json([]); return; }
+  if (!a1 || !a2) return res.json([]);
 
   const distance = getDistance(
     { latitude: a1.lat, longitude: a1.lon },
@@ -38,6 +38,7 @@ router.get('/search', (req: Request, res: Response) => {
   const flights = Array.from({ length: 6 }).map(() => {
     const airline = (airlines as any[])[Math.floor(Math.random() * airlines.length)];
     const price = Math.floor(distance / 1000 * 0.12) + 200;
+
     return {
       airline: airline.name,
       logo: airline.logo,
