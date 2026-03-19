@@ -564,7 +564,7 @@ export default function AIPlannerPage() {
           </div>
 
           {/* Available flights */}
-          {plan.flights?.length > 0 && (
+          {(plan.flights?.length ?? 0) > 0 && (
             <div className="card p-6">
               <h3 className="text-lg font-bold text-slate-900 mb-4" style={{ fontFamily: 'Syne, sans-serif' }}>
                 ✈ Matching Flights in Our System
@@ -591,7 +591,7 @@ export default function AIPlannerPage() {
 
           {/* Tips + Documents */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {plan.tips?.length > 0 && (
+            {(plan.tips?.length ?? 0) > 0 && (
               <div className="card p-5">
                 <h3 className="text-base font-bold text-slate-900 mb-4" style={{ fontFamily: 'Syne, sans-serif' }}>💡 Travel Tips</h3>
                 <ul className="space-y-2.5">
@@ -603,7 +603,7 @@ export default function AIPlannerPage() {
                 </ul>
               </div>
             )}
-            {plan.requiredDocuments?.length > 0 && (
+            {(plan.requiredDocuments?.length ?? 0) > 0 && (
               <div className="card p-5">
                 <h3 className="text-base font-bold text-slate-900 mb-4" style={{ fontFamily: 'Syne, sans-serif' }}>📄 Documents Required</h3>
                 <ul className="space-y-2.5">
