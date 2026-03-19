@@ -607,7 +607,7 @@ export default function AIPlannerPage() {
               <div className="card p-5">
                 <h3 className="text-base font-bold text-slate-900 mb-4" style={{ fontFamily: 'Syne, sans-serif' }}>📄 Documents Required</h3>
                 <ul className="space-y-2.5">
-                  {plan.requiredDocuments.map((d, i) => (
+                  {plan.requiredDocuments?.map((d, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600">
                       <span className="text-sky-400 flex-shrink-0 mt-0.5 font-bold">›</span> {d}
                     </li>
