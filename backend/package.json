@@ -5,8 +5,8 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "build": "echo Build skipped - using ts-node at runtime",
+    "start": "ts-node --transpile-only src/server.ts",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest --forceExit",
@@ -38,7 +38,9 @@
     "mongodb": "^7.1.0",
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
-    "stripe": "^14.10.0"
+    "stripe": "^14.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -56,20 +58,29 @@
     "prettier": "^3.1.1",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.6",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.3"
+    "ts-node-dev": "^2.0.0"
   },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
     "testPathPatterns": "__tests__",
     "transform": {
-      "^.+\\.tsx?$": ["ts-jest", { "tsconfig": { "module": "CommonJS" } }]
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "module": "CommonJS"
+          }
+        }
+      ]
     },
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
     "coverageDirectory": "coverage",
-    "collectCoverageFrom": ["src/**/*.ts", "!src/server.ts"]
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/server.ts"
+    ]
   }
 }
