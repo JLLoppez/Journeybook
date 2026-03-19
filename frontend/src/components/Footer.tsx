@@ -60,7 +60,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-600">
-          <span>© {new Date().getFullYear()} JourneyBook · All Rights Reserved · Built by <span className="text-slate-400 font-semibold">Jall Technologies</span></span>
+          <span>© {new Date().getFullYear()} JourneyBook · All Rights Reserved · Built by <span className="text-slate-400 font-semibold"><a href="https://jallopes.vercel.app/">Jall Technologies</a></span></span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
