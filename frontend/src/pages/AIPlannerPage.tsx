@@ -91,6 +91,49 @@ export default function AIPlannerPage() {
   const [duration, setDuration] = useState('5');
   const [description, setDescription] = useState('');
 
+  // Auto-calculate duration when dates change (return trip)
+  const handleDepartureDateChange = (val: string) => {
+    setDepartureDate(val);
+    if (isReturn && returnDate && val) {
+      const dep = new Date(val);
+      const ret = new Date(returnDate);
+      if (ret > dep) {
+        const days = Math.round((ret.getTime() - dep.getTime()) / (1000 * 60 * 60 * 24));
+        setDuration(String(days));
+      }
+    }
+  };
+
+  const handleReturnDateChange = (val: string) => {
+    setReturnDate(val);
+    if (departureDate && val) {
+      const dep = new Date(departureDate);
+      const ret = new Date(val);
+      if (ret > dep) {
+        const days = Math.round((ret.getTime() - dep.getTime()) / (1000 * 60 * 60 * 24));
+        setDuration(String(days));
+      }
+    }
+  };
+
+  const handleDurationChange = (val: string) => {
+    if (isReturn && departureDate && returnDate) {
+      const dep = new Date(departureDate);
+      const ret = new Date(returnDate);
+      const actualDays = Math.round((ret.getTime() - dep.getTime()) / (1000 * 60 * 60 * 24));
+      if (String(actualDays) !== val) {
+        toast.error('Duration must match your departure and return dates (' + actualDays + ' days). Update your dates first.');
+        return;
+      }
+    }
+    if (!isReturn && departureDate) {
+      const dep = new Date(departureDate);
+      dep.setDate(dep.getDate() + parseInt(val));
+      setReturnDate(dep.toISOString().split('T')[0]);
+    }
+    setDuration(val);
+  };
+
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [plan, setPlan] = useState<TravelPlan | null>(null);
@@ -195,7 +238,7 @@ export default function AIPlannerPage() {
           AI Travel Planner
         </h1>
         <p className="text-slate-500 max-w-lg mx-auto text-sm leading-relaxed">
-          Fill in your trip details and Claude AI will generate a complete personalised itinerary — scaled to your group, budget, and travel style.
+          Fill in your trip details and Gemini AI will generate a complete personalised itinerary — scaled to your group, budget, and travel style.
         </p>
       </div>
 
@@ -254,12 +297,12 @@ export default function AIPlannerPage() {
         <div className={'grid grid-cols-1 gap-4 mb-5 ' + (isReturn ? 'sm:grid-cols-2' : '')}>
           <div>
             <label className="label flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Departure Date *</label>
-            <input type="date" min={today} value={departureDate} onChange={e => setDepartureDate(e.target.value)} className="input-field w-full" />
+            <input type="date" min={today} value={departureDate} onChange={e => handleDepartureDateChange(e.target.value)} className="input-field w-full" />
           </div>
           {isReturn && (
             <div>
               <label className="label flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Return Date *</label>
-              <input type="date" min={departureDate || today} value={returnDate} onChange={e => setReturnDate(e.target.value)} className="input-field w-full" />
+              <input type="date" min={departureDate || today} value={returnDate} onChange={e => handleReturnDateChange(e.target.value)} className="input-field w-full" />
             </div>
           )}
         </div>
@@ -314,11 +357,24 @@ export default function AIPlannerPage() {
           </div>
           <div>
             <label className="label flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Duration (days) *</label>
-            <select className="input-field w-full" value={duration} onChange={e => setDuration(e.target.value)}>
-              {[2,3,4,5,6,7,8,9,10,12,14].map(d => (
-                <option key={d} value={d}>{d} days</option>
-              ))}
-            </select>
+            {isReturn ? (
+              <input
+                type="text"
+                readOnly
+                className="input-field w-full bg-slate-50 text-slate-500 cursor-not-allowed"
+                value={duration ? duration + ' days (auto-calculated)' : 'Select dates above'}
+              />
+            ) : (
+              <input
+                type="number"
+                min="1"
+                max="90"
+                className="input-field w-full"
+                placeholder="e.g. 5"
+                value={duration}
+                onChange={e => handleDurationChange(e.target.value)}
+              />
+            )}
           </div>
         </div>
 
@@ -358,7 +414,7 @@ export default function AIPlannerPage() {
             <Plane className="w-12 h-12 text-sky-400 animate-float" />
           </div>
           <h3 className="text-xl font-bold text-slate-700 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-            Claude AI is building your plan...
+            Gemini AI is building your plan...
           </h3>
           <p className="text-sky-600 text-sm font-medium mb-6">{LOADING_STEPS[loadingStep]}</p>
           <div className="w-full max-w-xs mx-auto bg-slate-100 rounded-full h-2 overflow-hidden">
@@ -381,7 +437,7 @@ export default function AIPlannerPage() {
                 <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
                   <div>
                     <p className="text-xs text-white/40 tracking-widest uppercase mb-1">
-                      {source === 'ai' ? 'Claude AI Generated Plan' : 'Sample Plan'}
+                      {source === 'ai' ? 'Gemini AI Generated Plan' : 'Sample Plan'}
                     </p>
                     <h2 className="text-2xl sm:text-3xl font-extrabold"
                       style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}>
@@ -401,7 +457,7 @@ export default function AIPlannerPage() {
                     </div>
                   </div>
                   <span className={'px-3 py-1 rounded-full text-xs font-bold border flex-shrink-0 ' + (source === 'ai' ? 'bg-sky-500/20 border-sky-400/30 text-sky-300' : 'bg-amber-500/20 border-amber-400/30 text-amber-300')}>
-                    {source === 'ai' ? '✦ Claude AI' : '◎ Sample'}
+                    {source === 'ai' ? '✦ Gemini AI' : '◎ Sample'}
                   </span>
                 </div>
 

@@ -20,7 +20,7 @@ const stats = [
 
 const features = [
   { icon: '💰', title: 'Best Prices', desc: 'Live prices from Duffel API — always the best available fare on every route.' },
-  { icon: '🤖', title: 'AI Trip Planning', desc: 'Claude AI crafts your full itinerary — flights, accommodation, activities and budget.' },
+  { icon: '🤖', title: 'AI Trip Planning', desc: 'Gemini AI crafts your full itinerary — flights, accommodation, activities and budget.' },
   { icon: '⚡', title: 'Instant Booking', desc: 'Confirmation in seconds. Manage everything from your dashboard.' },
 ];
 
@@ -124,7 +124,7 @@ export default function Home() {
           <div className="flex justify-center mb-6 fade-up">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-sky-300 tracking-wide"
               style={{ background: 'rgba(14,165,233,0.12)', border: '1px solid rgba(14,165,233,0.25)' }}>
-              ✈ &nbsp;Powered by Duffel API &amp; Claude AI
+              ✈ &nbsp;Powered by Duffel API &amp; Gemini AI
             </span>
           </div>
 

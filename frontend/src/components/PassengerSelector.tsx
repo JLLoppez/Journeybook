@@ -19,21 +19,21 @@ const TYPES = [
     label: 'Adults',
     sub: 'Age 12+',
     min: 1,
-    max: 9,
+    max: 99,
   },
   {
     key: 'children' as const,
     label: 'Children',
     sub: 'Age 2–11',
     min: 0,
-    max: 8,
+    max: 99,
   },
   {
     key: 'infants' as const,
     label: 'Infants',
     sub: 'Under 2 · lap',
     min: 0,
-    max: 4,
+    max: 99,
   },
 ];
 
@@ -61,7 +61,7 @@ export default function PassengerSelector({ value, onChange, dark }: PassengerSe
 
     // Total cap of 9
     const newTotal = total - value[key] + next;
-    if (newTotal > 9) return;
+    if (newTotal > 100) return;
 
     onChange({ ...value, [key]: next });
   };
@@ -120,7 +120,7 @@ export default function PassengerSelector({ value, onChange, dark }: PassengerSe
                     onClick={() => update(type.key, 1)}
                     disabled={
                       value[type.key] >= type.max ||
-                      total >= 9 ||
+                      total >= 100 ||
                       (type.key === 'infants' && value[type.key] >= value.adults)
                     }
                     className="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 font-bold text-lg
@@ -136,7 +136,7 @@ export default function PassengerSelector({ value, onChange, dark }: PassengerSe
           {/* Rules footer */}
           <div className="px-4 py-3 bg-slate-50 border-t border-slate-100">
             <p className="text-xs text-slate-400 leading-relaxed">
-              Max 9 passengers · Infants must not exceed adults · Infants travel on lap
+              Max 100 passengers · Infants must not exceed adults · Infants travel on lap
             </p>
           </div>
 
