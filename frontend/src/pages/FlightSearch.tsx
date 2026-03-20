@@ -126,6 +126,7 @@ export default function FlightSearch() {
     try {
       const res = await bookingService.create({
         flightId: bookingFlight._id || bookingFlight.id,
+        flightData: bookingFlight,
         passengers: totalPassengers,
         class: params.cabinClass,
         contactEmail: bookingForm.email,

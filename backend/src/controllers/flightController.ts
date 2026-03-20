@@ -1,130 +1,132 @@
 import { Request, Response } from 'express';
-import axios from 'axios';
 import { Flight } from '../models/Flight';
+import airports from '../../data/airports.json';
+import airlines from '../../data/airlines.json';
+import { getDistance } from 'geolib';
 
-type DuffelOffer = {
-  total_amount?: string;
-  slices?: Array<{
-    origin?: { iata_code?: string; city_name?: string; name?: string };
-    destination?: { iata_code?: string; city_name?: string; name?: string };
-    segments?: Array<{
-      departing_at?: string;
-      arriving_at?: string;
-      marketing_carrier?: {
-        name?: string;
-        iata_code?: string;
-      };
-    }>;
-  }>;
-  cabin_class?: string;
-  owner?: {
-    name?: string;
-    iata_code?: string;
-  };
+const CABIN_MULTIPLIERS: Record<string, number> = {
+  economy: 1,
+  business: 2.8,
+  first: 5.2,
 };
 
-const toDateParts = (iso?: string) => {
-  if (!iso) {
-    const now = new Date();
-    return {
-      date: now,
-      time: now.toISOString().slice(11, 16),
-    };
-  }
-
-  const d = new Date(iso);
-  return {
-    date: d,
-    time: d.toISOString().slice(11, 16),
-  };
+const AIRLINE_IATA: Record<string, string> = {
+  'Emirates': 'EK', 'Qatar Airways': 'QR', 'British Airways': 'BA',
+  'Lufthansa': 'LH', 'Air France': 'AF', 'KLM': 'KL',
+  'Turkish Airlines': 'TK', 'Singapore Airlines': 'SQ', 'Etihad Airways': 'EY',
+  'South African Airways': 'SA', 'Comair': 'MN', 'Airlink': '4Z',
+  'FlySafair': 'FA', 'Kulula': 'MN', 'Air Mauritius': 'MK',
+  'Kenya Airways': 'KQ', 'Ethiopian Airlines': 'ET', 'EgyptAir': 'MS',
+  'Air Arabia': 'G9', 'flydubai': 'FZ', 'Air Portugal': 'TP',
+  'Iberia': 'IB', 'Alitalia': 'AZ', 'Swiss': 'LX',
+  'Austrian Airlines': 'OS', 'Brussels Airlines': 'SN', 'Finnair': 'AY',
+  'Scandinavian Airlines': 'SK', 'United Airlines': 'UA', 'Delta Air Lines': 'DL',
+  'American Airlines': 'AA', 'Air Canada': 'AC', 'Qantas': 'QF',
 };
 
-const diffDuration = (start?: string, end?: string) => {
-  if (!start || !end) return 'N/A';
-  const ms = new Date(end).getTime() - new Date(start).getTime();
-  if (!Number.isFinite(ms) || ms <= 0) return 'N/A';
-  const hours = Math.floor(ms / (1000 * 60 * 60));
-  const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}h ${mins}m`;
+const randomBetween = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+const addMinutes = (date: Date, minutes: number): Date => {
+  return new Date(date.getTime() + minutes * 60000);
 };
 
-const mapDuffelOffer = (offer: DuffelOffer, requestedOrigin: string, requestedDestination: string) => {
-  const firstSlice = offer.slices?.[0];
-  const firstSegment = firstSlice?.segments?.[0];
-
-  const dep = toDateParts(firstSegment?.departing_at);
-  const arr = toDateParts(firstSegment?.arriving_at);
-
-  return {
-    airline:
-      firstSegment?.marketing_carrier?.name ||
-      offer.owner?.name ||
-      'Unknown Airline',
-    flightNumber:
-      `${firstSegment?.marketing_carrier?.iata_code || 'FL'}${Math.floor(100 + Math.random() * 900)}`,
-    origin: {
-      city: firstSlice?.origin?.city_name || requestedOrigin,
-      airport: firstSlice?.origin?.name || requestedOrigin,
-      code: firstSlice?.origin?.iata_code || requestedOrigin,
-    },
-    destination: {
-      city: firstSlice?.destination?.city_name || requestedDestination,
-      airport: firstSlice?.destination?.name || requestedDestination,
-      code: firstSlice?.destination?.iata_code || requestedDestination,
-    },
-    departure: dep,
-    arrival: arr,
-    duration: diffDuration(firstSegment?.departing_at, firstSegment?.arriving_at),
-    price: Number(offer.total_amount || 0),
-    availableSeats: 9,
-    class: (offer.cabin_class || 'economy').toLowerCase(),
-    amenities: ['Cabin baggage'],
-    stops: Math.max((firstSlice?.segments?.length || 1) - 1, 0),
-  };
+const formatTime = (date: Date): string => {
+  return date.toISOString().slice(11, 16);
 };
 
-const searchDuffelFlights = async (origin: string, destination: string, date: string, cabinClass?: string) => {
-  const apiKey = process.env.DUFFEL_API_KEY;
-
-  if (!apiKey || !apiKey.startsWith('duffel_')) {
-    return [];
-  }
-
-  const payload = {
-    slices: [
-      {
-        origin,
-        destination,
-        departure_date: date,
-      },
-    ],
-    passengers: [{ type: 'adult' }],
-    cabin_class: (cabinClass || 'economy').toLowerCase(),
-  };
-
-  const response = await axios.post(
-    'https://api.duffel.com/air/offer_requests',
-    payload,
-    {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Duffel-Version': 'v2',
-        'Content-Type': 'application/json',
-      },
-      timeout: 20000,
-    }
+const generateFlights = (
+  originAirport: any,
+  destAirport: any,
+  date: string,
+  cabinClass: string,
+  count: number = 6
+) => {
+  const distanceMeters = getDistance(
+    { latitude: originAirport.lat, longitude: originAirport.lon },
+    { latitude: destAirport.lat, longitude: destAirport.lon }
   );
+  const distanceKm = Math.round(distanceMeters / 1000);
 
-  console.log('Duffel raw response:', JSON.stringify(response.data, null, 2));
-  const offers =
-    response.data?.data?.offers ||
-    response.data?.data ||
-    response.data?.offers ||
-    [];
+  // Flight duration based on distance (avg 850 km/h)
+  const baseDurationMinutes = Math.round((distanceKm / 850) * 60) + 45; // +45 for taxi/takeoff
 
-  return Array.isArray(offers)
-    ? offers.map((offer: DuffelOffer) => mapDuffelOffer(offer, origin, destination))
-    : [];
+  // Base price per km (ZAR)
+  const basePrice = Math.round(distanceKm * 0.18 + 800);
+  const multiplier = CABIN_MULTIPLIERS[cabinClass] || 1;
+
+  const stops = distanceKm > 8000 ? 1 : distanceKm > 4000 ? randomBetween(0, 1) : 0;
+
+  const flights = [];
+  const departureDate = new Date(date);
+
+  // Generate departure times spread through the day
+  const departureTimes = [
+    randomBetween(5, 8),   // early morning
+    randomBetween(8, 11),  // morning
+    randomBetween(11, 14), // midday
+    randomBetween(14, 17), // afternoon
+    randomBetween(17, 20), // evening
+    randomBetween(20, 23), // night
+  ].slice(0, count);
+
+  for (let i = 0; i < count; i++) {
+    const airline = (airlines as any[])[randomBetween(0, airlines.length - 1)];
+    const iataCode = AIRLINE_IATA[airline.name] || 'FL';
+    const flightNumber = iataCode + randomBetween(100, 999);
+
+    const depHour = departureTimes[i];
+    const depMinute = randomBetween(0, 55);
+    const depDateTime = new Date(departureDate);
+    depDateTime.setHours(depHour, depMinute, 0, 0);
+
+    // Add extra time for stops
+    const stopExtra = stops * randomBetween(60, 120);
+    const totalDuration = baseDurationMinutes + stopExtra + randomBetween(-20, 30);
+    const arrDateTime = addMinutes(depDateTime, totalDuration);
+
+    // Price variation per flight
+    const priceVariation = randomBetween(-15, 25) / 100;
+    const finalPrice = Math.round(basePrice * multiplier * (1 + priceVariation) / 100) * 100;
+
+    flights.push({
+      airline: airline.name,
+      logo: airline.logo,
+      flightNumber,
+      origin: {
+        code: originAirport.iata,
+        city: originAirport.city,
+        airport: originAirport.name,
+        country: originAirport.country,
+      },
+      destination: {
+        code: destAirport.iata,
+        city: destAirport.city,
+        airport: destAirport.name,
+        country: destAirport.country,
+      },
+      departure: {
+        date: depDateTime,
+        time: formatTime(depDateTime),
+      },
+      arrival: {
+        date: arrDateTime,
+        time: formatTime(arrDateTime),
+      },
+      duration: `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m`,
+      distanceKm,
+      price: finalPrice,
+      availableSeats: randomBetween(4, 180),
+      class: cabinClass,
+      stops,
+      amenities: cabinClass === 'economy'
+        ? ['Cabin baggage', 'Meal included']
+        : cabinClass === 'business'
+        ? ['Cabin baggage', 'Checked baggage', 'Meal included', 'Lounge access', 'Extra legroom']
+        : ['Cabin baggage', 'Checked baggage', 'Gourmet dining', 'Lounge access', 'Flat bed', 'Chauffeur service'],
+    });
+  }
+
+  return flights.sort((a, b) => a.departure.date.getTime() - b.departure.date.getTime());
 };
 
 export const searchFlights = async (req: Request, res: Response) => {
@@ -135,79 +137,34 @@ export const searchFlights = async (req: Request, res: Response) => {
     const cabinClass = String(req.query.cabinClass || 'economy').toLowerCase().trim();
 
     if (!origin || !destination || !date) {
-      return res.status(400).json({
-        message: 'origin, destination and date are required',
+      return res.status(400).json({ message: 'origin, destination and date are required' });
+    }
+
+    const originAirport = (airports as any[]).find(a => a.iata === origin);
+    const destAirport = (airports as any[]).find(a => a.iata === destination);
+
+    if (!originAirport || !destAirport) {
+      return res.status(404).json({
+        message: `Airport not found: ${!originAirport ? origin : destination}`,
+        flights: [],
       });
     }
 
-    try {
-      const liveFlights = await searchDuffelFlights(origin, destination, date, cabinClass);
-
-      if (liveFlights.length > 0) {
-        await Flight.deleteMany({
-          'origin.code': origin,
-          'destination.code': destination,
-          class: cabinClass,
-        });
-
-        await Flight.insertMany(liveFlights);
-
-        return res.status(200).json({
-          count: liveFlights.length,
-          flights: liveFlights,
-          source: 'duffel',
-        });
-      }
-    } catch (duffelError: any) {
-      console.error(
-        'Duffel search failed, falling back to database:',
-        duffelError?.response?.data || duffelError?.message || duffelError
-      );
-    }
-
-    const searchDate = new Date(date);
-    const nextDate = new Date(searchDate);
-    nextDate.setDate(nextDate.getDate() + 1);
-
-    const dbFlights = await Flight.find({
-      'origin.code': origin,
-      'destination.code': destination,
-      class: cabinClass,
-      'departure.date': { $gte: searchDate, $lt: nextDate },
-    }).lean();
-
-    if (dbFlights.length > 0) {
-      return res.status(200).json({
-        count: dbFlights.length,
-        flights: dbFlights,
-        source: 'database',
-      });
-    }
-
-    const fallbackFlights = await Flight.find({
-      'origin.code': origin,
-      'destination.code': destination,
-      'departure.date': { $gte: searchDate, $lt: nextDate },
-    }).lean();
+    const flights = generateFlights(originAirport, destAirport, date, cabinClass, 6);
 
     return res.status(200).json({
-      count: fallbackFlights.length,
-      flights: fallbackFlights,
-      source: fallbackFlights.length ? 'database' : 'none',
+      count: flights.length,
+      flights,
+      source: 'simulated',
+      route: {
+        origin: { code: originAirport.iata, city: originAirport.city, country: originAirport.country },
+        destination: { code: destAirport.iata, city: destAirport.city, country: destAirport.country },
+        distanceKm: flights[0]?.distanceKm,
+      },
     });
   } catch (error: any) {
-    const details =
-      error?.response?.data ||
-      error?.message ||
-      error?.stack ||
-      error;
-
-    console.error('Flight search error details:', details);
-
-    return res.status(500).json({
-      message: 'Failed to search flights',
-      details: process.env.NODE_ENV !== 'production' ? details : undefined,
-    });
+    console.error('Flight search error:', error);
+    return res.status(500).json({ message: 'Failed to search flights', details: error.message });
   }
 };
 
@@ -224,11 +181,7 @@ export const getAllFlights = async (_req: Request, res: Response) => {
 export const getFlightById = async (req: Request, res: Response) => {
   try {
     const flight = await Flight.findById(req.params.id).lean();
-
-    if (!flight) {
-      return res.status(404).json({ message: 'Flight not found' });
-    }
-
+    if (!flight) return res.status(404).json({ message: 'Flight not found' });
     return res.status(200).json(flight);
   } catch (error) {
     console.error('Get flight by id error:', error);

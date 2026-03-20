@@ -91,7 +91,7 @@ export default function BookingDetails() {
           <div className="relative flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs text-white/40 tracking-widest uppercase mb-1">Booking Reference</p>
-              <p className="text-2xl font-extrabold tracking-widest" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '0.05em' }}>
+              <p className="text-xl sm:text-2xl font-extrabold tracking-widest truncate max-w-xs" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '0.05em' }}>
                 {booking.bookingReference}
               </p>
               <p className="text-white/50 text-xs mt-1">Booked on {safeFormat(booking.createdAt, 'dd MMM yyyy')}</p>
@@ -107,9 +107,9 @@ export default function BookingDetails() {
             <div>
               <p className="text-xs font-bold text-slate-400 tracking-widest uppercase mb-5">Flight Details</p>
 
-              <div className="flex items-center gap-4 sm:gap-8">
+              <div className="flex items-center gap-2 sm:gap-8 overflow-hidden">
                 <div>
-                  <p className="text-4xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}>
+                  <p className="text-2xl sm:text-4xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}>
                     {flight.origin?.code}
                   </p>
                   <p className="text-sm text-slate-500 mt-0.5">{flight.origin?.city}</p>
@@ -130,7 +130,7 @@ export default function BookingDetails() {
                 </div>
 
                 <div className="text-right">
-                  <p className="text-4xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}>
+                  <p className="text-2xl sm:text-4xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}>
                     {flight.destination?.code}
                   </p>
                   <p className="text-sm text-slate-500 mt-0.5">{flight.destination?.city}</p>
