@@ -181,6 +181,26 @@ export const aiService = {
     const { data } = await api.post('/ai/plan', { prompt, origin, budget, duration });
     return data;
   },
+  planTripFull: async (params: {
+    prompt: string;
+    origin?: string;
+    destination?: string;
+    destinationDisplay?: string;
+    originDisplay?: string;
+    budget?: string;
+    budgetOriginal?: string;
+    budgetCurrency?: string;
+    duration?: string;
+    tripType?: string;
+    isReturn?: boolean;
+    departureDate?: string;
+    returnDate?: string;
+    passengers?: { adults: number; children: number; infants: number };
+    cabinClass?: string;
+  }) => {
+    const { data } = await api.post('/ai/plan', params);
+    return data;
+  },
 };
 
 // ── Location service ──────────────────────────────────────────────────────────

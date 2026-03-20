@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { Plane, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -36,7 +37,7 @@ export default function Login() {
         <div className="absolute bottom-10 left-5 w-56 h-56 rounded-full opacity-10 blur-3xl bg-indigo-500 pointer-events-none" />
 
         <div className="relative text-center">
-          <div className="text-6xl mb-8 animate-float">✈️</div>
+          <div className="mb-8 animate-float flex justify-center"><Plane className="w-16 h-16 text-sky-400" /></div>
           <h2
             className="text-4xl font-extrabold text-white mb-4"
             style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}
@@ -65,7 +66,7 @@ export default function Login() {
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-2 mb-10 group">
             <div className="w-9 h-9 rounded-xl bg-sky-500 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-              <span className="text-white">✈</span>
+              <Plane className="w-4 h-4 text-white" />
             </div>
             <span className="text-xl font-bold text-slate-900" style={{ fontFamily: 'Syne, sans-serif' }}>
               Journey<span className="text-sky-500">Book</span>

@@ -4,8 +4,8 @@ import { bookingService } from '../services/api';
 import type { Booking } from '../types';
 import { format, isValid } from 'date-fns';
 import toast from 'react-hot-toast';
+import { Plane, ArrowLeft, ArrowRight } from 'lucide-react';
 
-// BUG FIX: safe date formatting — guards against invalid/null dates
 const safeFormat = (dateStr: string | undefined | null, fmt: string, fallback = '—') => {
   if (!dateStr) return fallback;
   const d = new Date(dateStr);
@@ -60,10 +60,12 @@ export default function BookingDetails() {
   if (!booking) {
     return (
       <div className="text-center py-24 px-4">
-        <div className="text-5xl mb-4">🔍</div>
+        <div className="flex justify-center mb-4 text-slate-300"><Plane className="w-16 h-16" /></div>
         <p className="text-slate-600 text-lg font-semibold mb-2">Booking not found</p>
         <p className="text-slate-400 text-sm mb-6">This booking may have been removed or the link is invalid.</p>
-        <Link to="/dashboard" className="btn-primary inline-flex">← Back to Dashboard</Link>
+        <Link to="/dashboard" className="btn-primary inline-flex items-center gap-2">
+          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+        </Link>
       </div>
     );
   }
@@ -78,31 +80,21 @@ export default function BookingDetails() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-      {/* Breadcrumb */}
-      <Link
-        to="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-sky-600 font-semibold mb-6 transition-colors"
-      >
-        ← Back to Dashboard
+      <Link to="/dashboard"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-sky-600 font-semibold mb-6 transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
 
       <div className="card overflow-hidden">
-
-        {/* Header */}
         <div className="hero-mesh p-6 text-white relative overflow-hidden">
           <div className="absolute inset-0 grid-texture pointer-events-none" />
           <div className="relative flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs text-white/40 tracking-widest uppercase mb-1">Booking Reference</p>
-              <p
-                className="text-2xl font-extrabold tracking-widest"
-                style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '0.05em' }}
-              >
+              <p className="text-2xl font-extrabold tracking-widest" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '0.05em' }}>
                 {booking.bookingReference}
               </p>
-              <p className="text-white/50 text-xs mt-1">
-                Booked on {safeFormat(booking.createdAt, 'dd MMM yyyy')}
-              </p>
+              <p className="text-white/50 text-xs mt-1">Booked on {safeFormat(booking.createdAt, 'dd MMM yyyy')}</p>
             </div>
             <span className={statusMap[booking.status] || 'badge bg-white/20 text-white'}>
               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
@@ -111,13 +103,10 @@ export default function BookingDetails() {
         </div>
 
         <div className="p-6 space-y-6">
-
-          {/* Flight details */}
           {flight ? (
             <div>
               <p className="text-xs font-bold text-slate-400 tracking-widest uppercase mb-5">Flight Details</p>
 
-              {/* Route display */}
               <div className="flex items-center gap-4 sm:gap-8">
                 <div>
                   <p className="text-4xl font-black text-slate-900" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}>
@@ -132,11 +121,11 @@ export default function BookingDetails() {
                   <p className="text-xs text-slate-400">{flight.duration || '—'}</p>
                   <div className="relative w-full flex items-center">
                     <div className="flex-1 h-px bg-slate-200" />
-                    <span className="mx-2 text-sky-500">✈</span>
+                    <Plane className="w-4 h-4 text-sky-500 mx-2" />
                     <div className="flex-1 h-px bg-slate-200" />
                   </div>
                   <p className="text-xs text-slate-400">
-                    {flight.stops === 0 ? 'Nonstop' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
+                    {flight.stops === 0 ? 'Nonstop' : flight.stops + ' stop' + (flight.stops > 1 ? 's' : '')}
                   </p>
                 </div>
 
@@ -170,7 +159,6 @@ export default function BookingDetails() {
             </div>
           )}
 
-          {/* Booking summary */}
           <div>
             <p className="text-xs font-bold text-slate-400 tracking-widest uppercase mb-4">Booking Summary</p>
             <div className="bg-slate-50 rounded-2xl p-5 space-y-3 text-sm">
@@ -186,27 +174,20 @@ export default function BookingDetails() {
               ))}
               <div className="flex justify-between items-center pt-3 border-t border-slate-200">
                 <span className="font-bold text-slate-900" style={{ fontFamily: 'Syne, sans-serif' }}>Total Paid</span>
-                <span
-                  className="text-2xl font-extrabold text-sky-600"
-                  style={{ fontFamily: 'Syne, sans-serif' }}
-                >
+                <span className="text-2xl font-extrabold text-sky-600" style={{ fontFamily: 'Syne, sans-serif' }}>
                   R{booking.totalPrice?.toLocaleString()}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-1">
-            <Link to="/dashboard" className="btn-outline flex-1 justify-center">
-              ← Dashboard
+            <Link to="/dashboard" className="btn-outline flex-1 justify-center flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" /> Dashboard
             </Link>
             {booking.status === 'confirmed' && (
-              <button
-                onClick={handleCancel}
-                disabled={cancelling}
-                className="btn-danger flex-1 justify-center"
-              >
+              <button onClick={handleCancel} disabled={cancelling}
+                className="btn-danger flex-1 justify-center flex items-center gap-2">
                 {cancelling ? 'Cancelling...' : 'Cancel Booking'}
               </button>
             )}

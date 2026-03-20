@@ -196,3 +196,326 @@
     background-size: 48px 48px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   2026 ANIMATION SYSTEM — Full Platform
+   ═══════════════════════════════════════════════════════ */
+
+@layer utilities {
+
+  /* ── Page transitions ──────────────────────────────── */
+  .page-enter {
+    animation: pageEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(12px) scale(0.995); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── Slide animations ──────────────────────────────── */
+  .slide-up {
+    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide-left {
+    animation: slideLeft 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes slideLeft {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .slide-right {
+    animation: slideRight 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes slideRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── Scale animations ──────────────────────────────── */
+  .scale-in {
+    animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .scale-in-center {
+    animation: scaleInCenter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes scaleInCenter {
+    from { opacity: 0; transform: scale(0.75); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── Bounce ────────────────────────────────────────── */
+  .bounce-in {
+    animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes bounceIn {
+    0%   { opacity: 0; transform: scale(0.7) translateY(20px); }
+    60%  { opacity: 1; transform: scale(1.05) translateY(-4px); }
+    100% { transform: scale(1) translateY(0); }
+  }
+
+  /* ── Pulse glow ────────────────────────────────────── */
+  .pulse-glow {
+    animation: pulseGlow 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+    50%       { box-shadow: 0 0 20px 4px rgba(14, 165, 233, 0.2); }
+  }
+
+  /* ── Shimmer / loading bar ─────────────────────────── */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.15) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmerMove 1.8s linear infinite;
+  }
+
+  @keyframes shimmerMove {
+    from { background-position: 200% center; }
+    to   { background-position: -200% center; }
+  }
+
+  /* ── Typing dots ───────────────────────────────────── */
+  .dot-pulse span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: dotPulse 1.2s ease-in-out infinite both;
+  }
+
+  .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dotPulse {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40%            { transform: scale(1);   opacity: 1; }
+  }
+
+  /* ── Spin variants ─────────────────────────────────── */
+  .spin-slow {
+    animation: spin 3s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* ── Plane fly-in ──────────────────────────────────── */
+  .plane-fly {
+    animation: planeFly 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes planeFly {
+    from { opacity: 0; transform: translateX(-40px) rotate(-10deg); }
+    to   { opacity: 1; transform: translateX(0) rotate(0deg); }
+  }
+
+  /* ── Number count up feel ──────────────────────────── */
+  .count-up {
+    animation: countUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Card hover lift (CSS only) ────────────────────── */
+  .card-lift {
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.2s ease;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px -8px rgba(0,0,0,0.15);
+  }
+
+  /* ── Button press ──────────────────────────────────── */
+  .btn-press {
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .btn-press:active {
+    transform: scale(0.96) translateY(1px);
+    box-shadow: none;
+  }
+
+  /* ── Underline grow ────────────────────────────────── */
+  .underline-grow {
+    position: relative;
+  }
+
+  .underline-grow::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .underline-grow:hover::after {
+    width: 100%;
+  }
+
+  /* ── Stagger children (for lists) ──────────────────── */
+  .stagger-children > *:nth-child(1)  { animation-delay: 0.05s; }
+  .stagger-children > *:nth-child(2)  { animation-delay: 0.10s; }
+  .stagger-children > *:nth-child(3)  { animation-delay: 0.15s; }
+  .stagger-children > *:nth-child(4)  { animation-delay: 0.20s; }
+  .stagger-children > *:nth-child(5)  { animation-delay: 0.25s; }
+  .stagger-children > *:nth-child(6)  { animation-delay: 0.30s; }
+
+  /* ── Route line animation ──────────────────────────── */
+  .route-line {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: drawLine 1s ease-out 0.3s forwards;
+  }
+
+  @keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ── Modal backdrop ────────────────────────────────── */
+  .backdrop-enter {
+    animation: backdropEnter 0.2s ease both;
+  }
+
+  @keyframes backdropEnter {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to   { opacity: 1; backdrop-filter: blur(4px); }
+  }
+
+  /* ── Toast-like notification ───────────────────────── */
+  .toast-enter {
+    animation: toastEnter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes toastEnter {
+    from { opacity: 0; transform: translateY(-12px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── Gradient shift (hero background) ─────────────── */
+  .gradient-shift {
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* ── Ripple effect ─────────────────────────────────── */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple::before {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: all 0.5s ease;
+  }
+
+  .ripple:active::before {
+    inset: -50%;
+    transform: scale(1);
+    opacity: 0;
+  }
+
+  /* ── Extended stagger delays ───────────────────────── */
+  .stagger-6  { animation-delay: 0.48s; opacity: 0; }
+  .stagger-7  { animation-delay: 0.56s; opacity: 0; }
+  .stagger-8  { animation-delay: 0.64s; opacity: 0; }
+
+  /* ── Wobble (for error states) ─────────────────────── */
+  .wobble {
+    animation: wobble 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  @keyframes wobble {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-6px); }
+    40%       { transform: translateX(6px); }
+    60%       { transform: translateX(-4px); }
+    80%       { transform: translateX(4px); }
+  }
+
+  /* ── Success checkmark ─────────────────────────────── */
+  .check-pop {
+    animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes checkPop {
+    from { opacity: 0; transform: scale(0) rotate(-45deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+}
+
+/* ── Global smooth transitions for interactive elements ── */
+a, button {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Focus ring ────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ── Reduced motion support ────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

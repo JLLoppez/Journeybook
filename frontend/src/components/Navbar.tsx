@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import CurrencySelector from './CurrencySelector';
+import { Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -82,6 +84,10 @@ export default function Navbar() {
 
             <div className="w-px h-5 bg-current opacity-10 mx-2" />
 
+            <CurrencySelector />
+
+            <div className="w-px h-5 bg-current opacity-10 mx-2" />
+
             {isAuthenticated ? (
               <>
                 <Link
@@ -126,11 +132,7 @@ export default function Navbar() {
             onClick={() => setMenuOpen(v => !v)}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           >
-            <div className="flex flex-col gap-1.5 w-5">
-              <div className={`h-0.5 bg-current transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-              <div className={`h-0.5 bg-current transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} />
-              <div className={`h-0.5 bg-current transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-            </div>
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
